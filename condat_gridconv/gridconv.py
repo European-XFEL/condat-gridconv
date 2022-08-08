@@ -8,11 +8,15 @@ r_hex = np.sqrt(2 / sqrt3) * np.array([[1, 1 / 2],
 r_cart = np.linalg.inv(r_hex)
 
 
-def shear(tile, delay, axis):
-    out = np.copy(tile)
+def shear(arr, delay, axis):
+    """Apply a shear operation in place
 
-    cx = round(tile.shape[0] / 2)
-    cy = round(tile.shape[1] / 2)
+    Shift each column (axis=0) or row (axis=1) in the array by an offset
+    proportional to its position. One column/row in the centre will stay in
+    position
+    """
+    cx = round(arr.shape[0] / 2)
+    cy = round(arr.shape[1] / 2)
 
     # Vertical shear
     if axis == 0:
@@ -21,10 +25,10 @@ def shear(tile, delay, axis):
             full_pixel_shift = round(shift)
 
             # Full pixel shifts
-            inplace_roll(out[:, k], full_pixel_shift)
+            inplace_roll(arr[:, k], full_pixel_shift)
 
             # Sub-pixel shifts
-            fractional_roll(out[:, k], shift - full_pixel_shift)
+            fractional_roll(arr[:, k], shift - full_pixel_shift)
     # Horizontal shear
     elif axis == 1:
         for k in range(2 * cx):
@@ -32,12 +36,10 @@ def shear(tile, delay, axis):
             full_pixel_shift = round(shift)
 
             # Full pixel shifts
-            inplace_roll(out[k, :], full_pixel_shift)
+            inplace_roll(arr[k, :], full_pixel_shift)
 
             # Sub-pixel shifts
-            fractional_roll(out[k, :], shift - full_pixel_shift)
-
-    return out
+            fractional_roll(arr[k, :], shift - full_pixel_shift)
 
 
 def pad(tile):
@@ -72,9 +74,9 @@ def hex2cart(tile):
     delay3 = 2 - np.sqrt(6 / sqrt3)
 
     # Apply shears
-    sheared = shear(padded_tile, delay3, axis=0)
-    sheared = shear(sheared, delay2, axis=1)
-    sheared = shear(sheared, delay1, axis=0)
+    shear(padded_tile, delay3, axis=0)
+    shear(padded_tile, delay2, axis=1)
+    shear(padded_tile, delay1, axis=0)
 
     # Extract the rectangular box
     height = round(np.dot(r_cart, [tile.shape[0], 0])[0])
@@ -88,5 +90,5 @@ def hex2cart(tile):
     half_width = width // 2
     half_height = height // 2
 
-    return sheared[-height // 2 + cx:height // 2 + cx + y0,
-           -width // 2 + cy:width // 2 + cy + 1]
+    return padded_tile[-height // 2 + cx:height // 2 + cx + y0,
+                       -width // 2 + cy:width // 2 + cy + 1]
