@@ -55,15 +55,15 @@ def pad(tile):
 
 def hex2cart(tile):
     padded_tile = pad(tile)
-    cx = int(padded_tile.shape[0] / 2)
-    cy = int(padded_tile.shape[1] / 2)
+    cy = int(padded_tile.shape[0] / 2)
+    cx = int(padded_tile.shape[1] / 2)
 
     # First we skew the image to a hexagonal shape
     height = tile.shape[0]
     y0 = height % 2  # Can we assume the tile lengths are always powers of 2?
     for y in range(-height // 2, height // 2 + y0 + 1):
         roll_amount = -int(np.floor((y + y0) / 2))
-        offset = y - y0 + cx
+        offset = y - y0 + cy
 
         padded_tile[offset, :] = np.roll(padded_tile[offset, :], roll_amount)
 
@@ -81,7 +81,6 @@ def hex2cart(tile):
     # Extract the rectangular box
     height = round(np.dot(r_cart, [tile.shape[0], 0])[0])
     width = round(np.dot(r_cart, [0, tile.shape[1]])[1])
-    y0 = height % 2
 
     # Should we use -half_width or -width // 2? These are not the same
     # because of the behaviour of //, which does truncation towards 0:
@@ -90,5 +89,5 @@ def hex2cart(tile):
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[-height // 2 + cx:height // 2 + cx + y0,
-                       -width // 2 + cy:width // 2 + cy + 1]
+    return padded_tile[cy-half_height : cy+half_height+(height % 2),
+                       cx-half_width : cx+half_width+(width % 2)]
