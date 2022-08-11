@@ -7,8 +7,9 @@ setup(
     author="European XFEL GmbH",
     author_email="da-support@xfel.eu",
     description="Convert data from hexagonal pixels to cartesian grid",
-    packages=find_packages(),
-    ext_modules = cythonize("condat_gridconv/shift.pyx"),
+    package_dir={"": "src"},
+    packages=["condat_gridconv"],
+    ext_modules = cythonize("src/condat_gridconv/shift.pyx"),
     install_requires=[
         'numpy',
     ],
