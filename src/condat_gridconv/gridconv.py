@@ -82,10 +82,7 @@ def hex2cart(tile):
     height = round(np.dot(r_cart, [tile.shape[0], 0])[0])
     width = round(np.dot(r_cart, [0, tile.shape[1]])[1])
 
-    # Should we use -half_width or -width // 2? These are not the same
-    # because of the behaviour of //, which does truncation towards 0:
-    # -(119 // 2) == -59
-    # -119 // 2 == -60
+    # // rounds towards zero, so -half_width differs from -width // 2.
     half_width = width // 2
     half_height = height // 2
 
