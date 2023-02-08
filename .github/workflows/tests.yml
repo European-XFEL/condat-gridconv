@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
 
     steps:
     - name: Checkout
@@ -43,7 +43,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.8.1
         env:
-          CIBW_BUILD: cp{36,37,38,39,310}-manylinux_x86_64
+          CIBW_BUILD: cp{36,37,38,39,310,311}-manylinux_x86_64
 
       - uses: actions/upload-artifact@v3
         with:
