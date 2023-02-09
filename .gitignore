@@ -3,3 +3,4 @@ __pycache__/
 /dist/
 *.c
 *.egg-info/
+.mesonpy-native-file.ini
