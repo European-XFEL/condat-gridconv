@@ -15,3 +15,10 @@ dependencies = [
 
 [project.urls]
 source = "https://github.com/European-XFEL/condat-gridconv"
+
+[tool.spin]
+package = "condat_gridconv"
+commands = [
+    "spin.cmds.meson.build",
+    "spin.cmds.meson.test",
+]
