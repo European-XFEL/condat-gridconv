@@ -32,52 +32,31 @@ jobs:
       run: |
         python3 -m pytest -v
 
-  build_wheels:
-    name: Build wheels
+  packages:
+    name: Build packages
     needs: tests
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.1
-        env:
-          CIBW_BUILD: cp{38,39,310,311,312}-manylinux_x86_64
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheels
-          path: ./wheelhouse/*.whl
-
-  build_sdist:
-    name: Build source distribution
-    needs: tests
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Build sdist
         run: pipx run build --sdist
 
-      - uses: actions/upload-artifact@v4
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.19.1
+        env:
+          CIBW_BUILD: cp{38,39,310,311,312}-manylinux_x86_64
         with:
-          name: sdist
-          path: dist/*.tar.gz
+          output-dir: dist
 
-  upload_pypi:
-    needs: [ build_wheels, build_sdist ]
-    runs-on: ubuntu-latest
-    # upload to PyPI on any tag on main
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          # unpack all artifacts into dist/
-          path: dist
-          merge-multiple: true
+      - name: List package files
+        run: |
+          ls -lh dist
 
+      # upload to PyPI on any tag on main
       - uses: pypa/gh-action-pypi-publish@release/v1
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}
