@@ -4,7 +4,7 @@ requires = ["meson-python", "Cython"]
 
 [project]
 name = "condat-gridconv"
-version = "0.1"
+version = "0.2"
 description = "Convert data from hexagonal pixels to cartesian grid"
 authors = [{name = "European XFEL GmbH", email = "da-support@xfel.eu"}]
 readme = "README.md"
