@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.8.1
+        uses: pypa/cibuildwheel@v2.19.1
         env:
           CIBW_BUILD: cp{38,39,310,311,312}-manylinux_x86_64
 
