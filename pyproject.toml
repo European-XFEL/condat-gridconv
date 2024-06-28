@@ -1,2 +1,24 @@
 [build-system]
-requires = ["setuptools", "wheel", "Cython"]
+build-backend = "mesonpy"
+requires = ["meson-python", "Cython"]
+
+[project]
+name = "condat-gridconv"
+version = "0.1"
+description = "Convert data from hexagonal pixels to cartesian grid"
+authors = [{name = "European XFEL GmbH", email = "da-support@xfel.eu"}]
+readme = "README.md"
+requires-python='>=3.8'
+dependencies = [
+    'numpy',
+]
+
+[project.urls]
+source = "https://github.com/European-XFEL/condat-gridconv"
+
+[tool.spin]
+package = "condat_gridconv"
+commands = [
+    "spin.cmds.meson.build",
+    "spin.cmds.meson.test",
+]

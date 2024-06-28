@@ -1,3 +1,0 @@
-include README.md
-include src/condat_gridconv/*.pyx
-exclude src/condat_gridconv/*.c

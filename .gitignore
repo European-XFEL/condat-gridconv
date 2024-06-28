@@ -1,5 +1,7 @@
 __pycache__/
 /build/
+/build-install/
 /dist/
 *.c
 *.egg-info/
+.mesonpy-native-file.ini
