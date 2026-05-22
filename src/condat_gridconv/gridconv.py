@@ -59,13 +59,10 @@ def hex2cart(tile):
     cx = int(padded_tile.shape[1] / 2)
 
     # First we skew the image to a hexagonal shape
-    height = tile.shape[0]
-    y0 = height % 2  # Can we assume the tile lengths are always powers of 2?
-    for y in range(-height // 2, height // 2 + y0 + 1):
-        roll_amount = -int(np.floor((y + y0) / 2))
-        offset = y - y0 + cy
-
-        padded_tile[offset, :] = np.roll(padded_tile[offset, :], roll_amount)
+    height = padded_tile.shape[0]
+    for y in range(height):
+        roll_amount = -int(np.floor((y - cy) / 2))
+        padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
 
     # Create shear coefficients
     sqrt3 = np.sqrt(3)
