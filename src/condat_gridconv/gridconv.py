@@ -47,8 +47,8 @@ def pad(tile):
     w1 = tile.shape[1] // 2
 
     # Can we assume that a tile length is always a power of 2?
-    width0 = (w0, w0) if tile.shape[0] % 2 == 0 else (w0, w0 + 1)
-    width1 = (w1, w1) if tile.shape[1] % 2 == 0 else (w1, w1 + 1)
+    width0 = (w0, w0) if tile.shape[0] % 2 == 0 else (w0, w0 - 1)
+    width1 = (w1, w1) if tile.shape[1] % 2 == 0 else (w1, w1 - 1)
 
     return np.pad(tile, (width0, width1), mode="reflect")
 
