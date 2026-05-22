@@ -88,3 +88,36 @@ def hex2cart(tile):
 
     return padded_tile[cy-half_height : cy+half_height+(height % 2),
                        cx-half_width : cx+half_width+(width % 2)]
+
+def cart2hex(tile):
+    padded_tile = pad(tile)
+    cy = padded_tile.shape[0] // 2
+    cx = padded_tile.shape[1] // 2
+
+    # Create shear coefficients
+    sqrt3 = np.sqrt(3)
+    delay1 = sqrt3 - np.sqrt(6 / sqrt3)
+    delay2 = np.sqrt(sqrt3 / 6)
+    delay3 = 2 - np.sqrt(6 / sqrt3)
+
+    # Apply shears in reverse order and opposite direction
+    shear(padded_tile, -delay1, axis=0)
+    shear(padded_tile, -delay2, axis=1)
+    shear(padded_tile, -delay3, axis=0)
+
+    # unskew the image to a hexagonal shape
+    height = padded_tile.shape[0]
+    for y in range(height):
+        roll_amount = int(np.floor((y - cy) / 2))
+        padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
+
+    # Extract the rectangular box
+    height = round(np.dot(r_hex, [tile.shape[0], 0])[0])
+    width = round(np.dot(r_hex, [0, tile.shape[1]])[1])
+
+    # // rounds towards zero, so -half_width differs from -width // 2.
+    half_width = width // 2
+    half_height = height // 2
+
+    return padded_tile[cy-half_height : cy+half_height+(height % 2),
+                       cx-half_width : cx+half_width+(width % 2)]

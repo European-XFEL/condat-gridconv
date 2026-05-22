@@ -1,7 +1,7 @@
 import numpy as np
 
 from condat_gridconv.shift import inplace_roll, fractional_roll
-from condat_gridconv.gridconv import hex2cart
+from condat_gridconv.gridconv import hex2cart, cart2hex
 
 def test_inplace_roll():
     a = np.random.random(10)
@@ -31,3 +31,11 @@ def test_hex2cart():
 
     # The output should have roughly as many pixels as the input
     assert 0.9 < (res.size / a.size) < 1.1
+
+def test_reversible():
+    tile = np.repeat(np.repeat(1.0+1.0*np.arange(16), 64)[:, np.newaxis],
+                     64, axis=1)
+    tile = np.vstack([tile.T[:, :512], tile.T[:, 512:]])
+    ntile = cart2hex(hex2cart(tile))
+
+    assert np.sum(np.abs(ntile - tile)) < 7.0
