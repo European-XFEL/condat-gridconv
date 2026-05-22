@@ -42,7 +42,7 @@ def shear(arr, delay, axis):
             fractional_roll(arr[k, :], shift - full_pixel_shift)
 
 
-def pad(tile):
+def pad(tile, fill_value=None):
     w0 = tile.shape[0] // 2
     w1 = tile.shape[1] // 2
 
@@ -50,11 +50,15 @@ def pad(tile):
     width0 = (w0, w0) if tile.shape[0] % 2 == 0 else (w0, w0 - 1)
     width1 = (w1, w1) if tile.shape[1] % 2 == 0 else (w1, w1 - 1)
 
-    return np.pad(tile, (width0, width1), mode="reflect")
+    if fill_value is not None:
+        return np.pad(tile, (width0, width1),
+                      mode="constant", constant_values=fill_value)
+    else:
+        return np.pad(tile, (width0, width1), mode="reflect")
 
 
-def hex2cart(tile):
-    padded_tile = pad(tile)
+def hex2cart(tile, fill_value=None):
+    padded_tile = pad(tile, fill_value)
     cy = int(padded_tile.shape[0] / 2)
     cx = int(padded_tile.shape[1] / 2)
 
@@ -86,8 +90,8 @@ def hex2cart(tile):
     return padded_tile[cy-half_height : cy+half_height+(height % 2),
                        cx-half_width : cx+half_width+(width % 2)]
 
-def cart2hex(tile):
-    padded_tile = pad(tile)
+def cart2hex(tile, fill_value=None):
+    padded_tile = pad(tile, fill_value)
     cy = padded_tile.shape[0] // 2
     cx = padded_tile.shape[1] // 2
 
