@@ -122,3 +122,40 @@ def cart2hex(tile, fill_value=None):
 
     return padded_tile[cy-half_height : cy+half_height+(height % 2),
                        cx-half_width : cx+half_width+(width % 2)]
+
+def rotate(tile, angle, fill_value=None):
+    """Rotate an image reversibly using 3 shears.
+
+    tile: array, image to rotate
+    angle: float, angle of rotation in degree.
+    fill_value: float, fill value for padding the tile, if None, then pad
+        the image with reflections of itself.
+    """
+    padded_tile = pad(tile, fill_value)
+    cy = padded_tile.shape[0] // 2
+    cx = padded_tile.shape[1] // 2
+
+    # Create shear coefficients
+    theta = np.deg2rad(angle)
+    delay1 = -np.tan(theta/2.0)
+    axis1 = 1
+    delay2 = np.sin(theta)
+    axis2 = 0
+    delay3 = -np.tan(theta/2.0)
+    axis3 = 1
+
+    # Apply shears in reverse order and opposite direction
+    shear(padded_tile, delay1, axis=axis1)
+    shear(padded_tile, delay2, axis=axis2)
+    shear(padded_tile, delay3, axis=axis3)
+
+    # Extract the rectangular box
+    height = tile.shape[0]
+    width = tile.shape[1]
+
+    # // rounds towards zero, so -half_width differs from -width // 2.
+    half_width = width // 2
+    half_height = height // 2
+
+    return padded_tile[cy-half_height : cy+half_height+(height % 2),
+                       cx-half_width : cx+half_width+(width % 2)]

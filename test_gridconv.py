@@ -1,7 +1,7 @@
 import numpy as np
 
 from condat_gridconv.shift import inplace_roll, fractional_roll
-from condat_gridconv.gridconv import hex2cart, cart2hex
+from condat_gridconv.gridconv import hex2cart, cart2hex, rotate
 
 def test_inplace_roll():
     a = np.random.random(10)
@@ -39,3 +39,11 @@ def test_reversible():
     ntile = cart2hex(hex2cart(tile))
 
     assert np.sum(np.abs(ntile - tile)) < 7.0
+
+def test_rotate_reversible():
+    img = np.zeros((64, 32))
+    img[20:32, 10:20]= 100.0
+    angle = 4.9
+    err = np.sum(np.abs(img - rotate(rotate(img, angle, fill_value=0.0),
+                                     -angle, fill_value=0.0)))
+    assert err < 1.0
