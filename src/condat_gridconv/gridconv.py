@@ -41,6 +41,34 @@ def shear(arr, delay, axis):
             # Sub-pixel shifts
             fractional_roll(arr[k, :], shift - full_pixel_shift)
 
+def inplace_shift(arr, dx, dy):
+    """Apply a shift operation in place
+
+    Shift each column (axis=0) or row (axis=1) in the array by an offset
+    """
+    cx = round(arr.shape[0] / 2)
+    cy = round(arr.shape[1] / 2)
+
+    # Vertical shear
+    for k in range(2 * cy):
+        shift = delay
+        full_pixel_shift = round(shift)
+
+        # Full pixel shifts
+        inplace_roll(arr[:, k], full_pixel_shift)
+
+        # Sub-pixel shifts
+        fractional_roll(arr[:, k], shift - full_pixel_shift)
+    # Horizontal shear
+    for k in range(2 * cx):
+        shift = delay
+        full_pixel_shift = round(shift)
+
+        # Full pixel shifts
+        inplace_roll(arr[k, :], full_pixel_shift)
+
+        # Sub-pixel shifts
+        fractional_roll(arr[k, :], shift - full_pixel_shift)
 
 def pad(tile, fill_value=None):
     w0 = tile.shape[0] // 2
@@ -56,6 +84,36 @@ def pad(tile, fill_value=None):
     else:
         return np.pad(tile, (width0, width1), mode="reflect")
 
+
+def hex_shift(tile, dx, dy, fill_value=None):
+    padded_tile = pad(tile, fill_value)
+    cy = int(padded_tile.shape[0] / 2)
+    cx = int(padded_tile.shape[1] / 2)
+
+    # First we skew the image to a hexagonal shape
+    height = padded_tile.shape[0]
+    for y in range(height):
+        roll_amount = -int(np.floor((y - cy) / 2))
+        padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
+
+    # Apply shifts
+    inplace_shift(padded_tile, dx, dy)
+
+    # Unskew the image to a hexagonal shape
+    for y in range(height):
+        roll_amount = int(np.floor((y - cy) / 2))
+        padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
+
+    # Extract the rectangular box
+    height = tile.shape[0]
+    width = tile.shape[1]
+
+    # // rounds towards zero, so -half_width differs from -width // 2.
+    half_width = width // 2
+    half_height = height // 2
+
+    return padded_tile[cy-half_height : cy+half_height+(height % 2),
+                       cx-half_width : cx+half_width+(width % 2)]
 
 def hex2cart(tile, fill_value=None):
     padded_tile = pad(tile, fill_value)
