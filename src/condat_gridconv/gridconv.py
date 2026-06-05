@@ -7,6 +7,21 @@ r_hex = np.sqrt(2 / sqrt3) * np.array([[1, 1 / 2],
                                        [0, sqrt3 /2 ]])
 r_cart = np.linalg.inv(r_hex)
 
+def pixel_hex2cart(x_hex, y_hex):
+    """Converts hexagonal pixels position to cartesian.
+    """
+    x_cart = np.dot(r_cart, [0, x_hex])[1]
+    y_cart = np.dot(r_cart, [y_hex, 0])[0]
+
+    return x_cart, y_cart
+
+def pixel_cart2hex(x_cart, y_cart):
+    """Converts cartesian pixel position to hexagonal.
+    """
+    x_hex = np.dot(r_hex, [0, x_cart])[1]
+    y_hex = np.dot(r_hex, [y_cart, 0])[0]
+
+    return x_hex, y_hex
 
 def shear(arr, delay, axis):
     """Apply a shear operation in place
@@ -138,8 +153,9 @@ def hex2cart(tile, fill_value=None):
     shear(padded_tile, delay1, axis=0)
 
     # Extract the rectangular box
-    height = round(np.dot(r_cart, [tile.shape[0], 0])[0])
-    width = round(np.dot(r_cart, [0, tile.shape[1]])[1])
+    width, height = pixel_hex2cart(tile.shape[1], tile.shape[0])
+    height = round(height)
+    width = round(width)
 
     # // rounds towards zero, so -half_width differs from -width // 2.
     half_width = width // 2
@@ -171,8 +187,9 @@ def cart2hex(tile, fill_value=None):
         padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
 
     # Extract the rectangular box
-    height = round(np.dot(r_hex, [tile.shape[0], 0])[0])
-    width = round(np.dot(r_hex, [0, tile.shape[1]])[1])
+    width, height = pixel_cart2hex(tile.shape[1], tile.shape[0])
+    height = round(height)
+    width = round(width)
 
     # // rounds towards zero, so -half_width differs from -width // 2.
     half_width = width // 2
