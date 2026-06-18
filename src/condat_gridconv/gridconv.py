@@ -61,12 +61,12 @@ def inplace_shift(arr, dx, dy):
 
     Shift each column (axis=0) or row (axis=1) in the array by an offset
     """
-    cx = round(arr.shape[0] / 2)
-    cy = round(arr.shape[1] / 2)
+    cx = arr.shape[1]
+    cy = arr.shape[0]
 
     # Vertical shear
-    for k in range(2 * cy):
-        shift = delay
+    for k in range(cx):
+        shift = dy
         full_pixel_shift = round(shift)
 
         # Full pixel shifts
@@ -74,9 +74,10 @@ def inplace_shift(arr, dx, dy):
 
         # Sub-pixel shifts
         fractional_roll(arr[:, k], shift - full_pixel_shift)
+
     # Horizontal shear
-    for k in range(2 * cx):
-        shift = delay
+    for k in range(cy):
+        shift = dx
         full_pixel_shift = round(shift)
 
         # Full pixel shifts
