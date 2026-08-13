@@ -1,8 +1,15 @@
 import numpy as np
+from scipy.ndimage import rotate as scipyrotate
 
 from condat_gridconv.shift import inplace_roll, fractional_roll
-from condat_gridconv.gridconv import (hex2cart, cart2hex, rotate,
-                                      pixel_hex2cart, pixel_cart2hex)
+from condat_gridconv.gridconv import (
+    hex2cart,
+    cart2hex,
+    rotate,
+    pixel_hex2cart,
+    pixel_cart2hex,
+)
+
 
 def test_inplace_roll():
     a = np.random.random(10)
@@ -16,6 +23,7 @@ def test_inplace_roll():
     inplace_roll(a, -5)
     np.testing.assert_array_equal(a, np.roll(orig, -2))
 
+
 def test_fractional_roll_roundtrip():
     a = np.random.random(10)
     orig = a.copy()
@@ -26,6 +34,7 @@ def test_fractional_roll_roundtrip():
     fractional_roll(a, -0.2)
     np.testing.assert_allclose(a, orig)
 
+
 def test_hex2cart():
     a = np.zeros((128, 512))
     res = hex2cart(a)
@@ -33,21 +42,31 @@ def test_hex2cart():
     # The output should have roughly as many pixels as the input
     assert 0.9 < (res.size / a.size) < 1.1
 
+
 def test_reversible():
-    tile = np.repeat(np.repeat(1.0+1.0*np.arange(16), 64)[:, np.newaxis],
-                     64, axis=1)
+    tile = np.repeat(
+        np.repeat(1.0 + 1.0 * np.arange(16), 64)[:, np.newaxis], 64, axis=1
+    )
     tile = np.vstack([tile.T[:, :512], tile.T[:, 512:]])
     ntile = cart2hex(hex2cart(tile))
+    np.testing.assert_allclose(ntile, tile, atol=0.5, rtol=0.05)
 
-    assert np.sum(np.abs(ntile - tile)) < 7.0
+
+def test_rotate():
+    img = np.zeros((64, 32))
+    img[:, 10:14] = 100.0
+    img3 = rotate(img, 90, fill_value=0)
+    img2 = scipyrotate(img, -90, reshape=False)
+    np.testing.assert_allclose(img2, img3, atol=1e-12, rtol=1e-15)
+
 
 def test_rotate_reversible():
     img = np.zeros((64, 32))
-    img[20:32, 10:20]= 100.0
+    img[20:32, 10:20] = 100.0
     angle = 4.9
-    err = np.sum(np.abs(img - rotate(rotate(img, angle, fill_value=0.0),
-                                     -angle, fill_value=0.0)))
-    assert err < 1.0
+    img2 = rotate(rotate(img, angle, fill_value=0.0), -angle, fill_value=0.0)
+    np.testing.assert_allclose(img2, img, atol=1e-1, rtol=1e-8)
+
 
 def test_pixel_position():
     x_hex = 512
