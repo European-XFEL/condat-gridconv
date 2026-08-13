@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "mesonpy"
-requires = ["meson-python", "Cython"]
+requires = ["meson-python", "meson>=1.2.3", "Cython", "ninja"]
 
 [project]
 name = "condat-gridconv"
@@ -15,6 +15,11 @@ dependencies = [
 
 [project.urls]
 source = "https://github.com/European-XFEL/condat-gridconv"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
 
 [tool.spin]
 package = "condat_gridconv"
