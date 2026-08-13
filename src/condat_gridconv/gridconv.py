@@ -95,13 +95,15 @@ def pad(tile, fill_value=None):
     width1 = (w1, w1) if tile.shape[1] % 2 == 0 else (w1, w1 - 1)
 
     if fill_value is not None:
-        return np.pad(tile, (width0, width1),
-                      mode="constant", constant_values=fill_value)
+        return np.pad(
+            tile, (width0, width1), mode="constant", constant_values=fill_value
+        )
     else:
         return np.pad(tile, (width0, width1), mode="reflect")
 
 
 def hex_shift(tile, dx, dy, fill_value=None):
+    """Shift an hexagonal image with fractional pixel shifts."""
     padded_tile = pad(tile, fill_value)
     cy = int(padded_tile.shape[0] / 2)
     cx = int(padded_tile.shape[1] / 2)
