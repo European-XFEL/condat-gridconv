@@ -3,25 +3,25 @@ import numpy as np
 from .shift import fractional_roll, inplace_roll
 
 sqrt3 = np.sqrt(3)
-r_hex = np.sqrt(2 / sqrt3) * np.array([[1, 1 / 2],
-                                       [0, sqrt3 /2 ]])
+r_hex = np.sqrt(2 / sqrt3) * np.array([[1, 1 / 2], [0, sqrt3 / 2]])
 r_cart = np.linalg.inv(r_hex)
 
+
 def pixel_hex2cart(x_hex, y_hex):
-    """Converts hexagonal pixels position to cartesian.
-    """
+    """Converts hexagonal pixels position to cartesian."""
     x_cart = np.dot(r_cart, [0, x_hex])[1]
     y_cart = np.dot(r_cart, [y_hex, 0])[0]
 
     return x_cart, y_cart
 
+
 def pixel_cart2hex(x_cart, y_cart):
-    """Converts cartesian pixel position to hexagonal.
-    """
+    """Converts cartesian pixel position to hexagonal."""
     x_hex = np.dot(r_hex, [0, x_cart])[1]
     y_hex = np.dot(r_hex, [y_cart, 0])[0]
 
     return x_hex, y_hex
+
 
 def shear(arr, delay, axis):
     """Apply a shear operation in place
@@ -56,6 +56,7 @@ def shear(arr, delay, axis):
             # Sub-pixel shifts
             fractional_roll(arr[k, :], shift - full_pixel_shift)
 
+
 def inplace_shift(arr, dx, dy):
     """Apply a shift operation in place
 
@@ -85,6 +86,7 @@ def inplace_shift(arr, dx, dy):
 
         # Sub-pixel shifts
         fractional_roll(arr[k, :], shift - full_pixel_shift)
+
 
 def pad(tile, fill_value=None):
     w0 = tile.shape[0] // 2
@@ -130,8 +132,11 @@ def hex_shift(tile, dx, dy, fill_value=None):
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[cy-half_height : cy+half_height+(height % 2),
-                       cx-half_width : cx+half_width+(width % 2)]
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
+
 
 def hex2cart(tile, fill_value=None):
     padded_tile = pad(tile, fill_value)
@@ -164,8 +169,11 @@ def hex2cart(tile, fill_value=None):
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[cy-half_height : cy+half_height+(height % 2),
-                       cx-half_width : cx+half_width+(width % 2)]
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
+
 
 def cart2hex(tile, fill_value=None):
     padded_tile = pad(tile, fill_value)
@@ -198,8 +206,11 @@ def cart2hex(tile, fill_value=None):
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[cy-half_height : cy+half_height+(height % 2),
-                       cx-half_width : cx+half_width+(width % 2)]
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
+
 
 def rotate(tile, angle, fill_value=None):
     """Rotate an image reversibly using 3 shears.
@@ -215,11 +226,11 @@ def rotate(tile, angle, fill_value=None):
 
     # Create shear coefficients
     theta = np.deg2rad(angle)
-    delay1 = -np.tan(theta/2.0)
+    delay1 = -np.tan(theta / 2.0)
     axis1 = 1
     delay2 = np.sin(theta)
     axis2 = 0
-    delay3 = -np.tan(theta/2.0)
+    delay3 = -np.tan(theta / 2.0)
     axis3 = 1
 
     # Apply shears in reverse order and opposite direction
@@ -235,5 +246,7 @@ def rotate(tile, angle, fill_value=None):
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[cy-half_height : cy+half_height+(height % 2),
-                       cx-half_width : cx+half_width+(width % 2)]
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
