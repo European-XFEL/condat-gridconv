@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.ndimage import rotate as scipyrotate
 
 from condat_gridconv.shift import inplace_roll, fractional_roll
 from condat_gridconv.gridconv import hex2cart, cart2hex, rotate
@@ -43,6 +44,14 @@ def test_reversible():
     tile = np.vstack([tile.T[:, :512], tile.T[:, 512:]])
     ntile = cart2hex(hex2cart(tile))
     np.testing.assert_allclose(ntile, tile, atol=0.5, rtol=0.05)
+
+
+def test_rotate():
+    img = np.zeros((64, 32))
+    img[:, 10:14] = 100.0
+    img3 = rotate(img, 90, fill_value=0)
+    img2 = scipyrotate(img, -90, reshape=False)
+    np.testing.assert_allclose(img2, img3, atol=1e-12, rtol=1e-15)
 
 
 def test_rotate_reversible():

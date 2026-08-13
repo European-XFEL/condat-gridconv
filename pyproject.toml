@@ -19,6 +19,7 @@ source = "https://github.com/European-XFEL/condat-gridconv"
 [project.optional-dependencies]
 test = [
     "pytest",
+		"scipy",
 ]
 
 [tool.spin]
