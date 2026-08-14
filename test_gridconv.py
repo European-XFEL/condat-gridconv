@@ -6,8 +6,8 @@ from condat_gridconv.gridconv import (
     hex2cart,
     cart2hex,
     rotate,
-    pixel_hex2cart,
-    pixel_cart2hex,
+    pixel_coord_hex2cart,
+    pixel_coord_cart2hex,
     inplace_shift,
     hex_shift,
 )
@@ -71,12 +71,12 @@ def test_rotate_reversible():
 
 
 def test_pixel_position():
-    x_hex = 512
-    y_hex = 128
-    x_cart, y_cart = pixel_hex2cart(x_hex, y_hex)
-    x_hex2, y_hex2 = pixel_cart2hex(x_cart, y_cart)
-    assert x_hex == x_hex2
-    assert y_hex == y_hex2
+    x_hex = np.array([1, 512])
+    y_hex = np.array([1, 128])
+    x_cart, y_cart = pixel_coord_hex2cart(x_hex, y_hex)
+    x_hex2, y_hex2 = pixel_coord_cart2hex(x_cart, y_cart)
+    np.testing.assert_equal(x_hex, x_hex2)
+    np.testing.assert_equal(y_hex, y_hex2)
 
 
 def test_inplace_shift():
