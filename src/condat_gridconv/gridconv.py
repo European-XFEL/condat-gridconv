@@ -57,35 +57,32 @@ def shear(arr, delay, axis):
             fractional_roll(arr[k, :], shift - full_pixel_shift)
 
 
-def inplace_shift(arr, dx, dy):
-    """Apply a shift operation in place
+def shift(arr, dx, dy):
+    """Apply a 2D shift operation
 
-    Shift each column (axis=0) or row (axis=1) in the array by an offset
+    Shift each column (axis=0) or row (axis=1) in the array by an offset,
+    which may be fractional.
     """
     cx = arr.shape[1]
     cy = arr.shape[0]
 
-    # Vertical shear
+    # Vertical shift
+    shift = dy
+    full_pixel_shift = round(shift)
+    narr = np.roll(arr, full_pixel_shift, axis=0)
     for k in range(cx):
-        shift = dy
-        full_pixel_shift = round(shift)
-
-        # Full pixel shifts
-        inplace_roll(arr[:, k], full_pixel_shift)
-
         # Sub-pixel shifts
-        fractional_roll(arr[:, k], shift - full_pixel_shift)
+        fractional_roll(narr[:, k], shift - full_pixel_shift)
 
-    # Horizontal shear
+    # Horizontal shift
+    shift = dx
+    full_pixel_shift = round(shift)
+    narr = np.roll(narr, full_pixel_shift, axis=1)
     for k in range(cy):
-        shift = dx
-        full_pixel_shift = round(shift)
-
-        # Full pixel shifts
-        inplace_roll(arr[k, :], full_pixel_shift)
-
         # Sub-pixel shifts
         fractional_roll(arr[k, :], shift - full_pixel_shift)
+
+    return narr
 
 
 def pad(tile, fill_value=None):
@@ -117,7 +114,7 @@ def hex_shift(tile, dx, dy, fill_value=None):
         padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
 
     # Apply shifts
-    inplace_shift(padded_tile, dx, dy)
+    padded_tile = shift(padded_tile, dx, dy)
 
     # Unskew the image to a hexagonal shape
     for y in range(height):

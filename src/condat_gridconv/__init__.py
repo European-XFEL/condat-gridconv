@@ -5,5 +5,5 @@ from .gridconv import (
     hex_shift,
     pixel_coord_hex2cart,
     pixel_coord_cart2hex,
-    inplace_shift,
+    shift,
 )

@@ -8,7 +8,7 @@ from condat_gridconv.gridconv import (
     rotate,
     pixel_coord_hex2cart,
     pixel_coord_cart2hex,
-    inplace_shift,
+    shift,
     hex_shift,
 )
 
@@ -79,7 +79,7 @@ def test_pixel_position():
     np.testing.assert_equal(y_hex, y_hex2)
 
 
-def test_inplace_shift():
+def test_shift():
     M, N = 128, 256
     img = np.zeros((M, N))
     y = np.arange(M) - M / 2
@@ -90,8 +90,7 @@ def test_inplace_shift():
     img = np.exp(-(xv**2 + yv**2) / sigma**2)
     dx, dy = -48.835, 8.8757
     img2 = np.exp(-((xv - dx) ** 2 + (yv - dy) ** 2) / sigma**2)
-    img3 = np.copy(img)
-    inplace_shift(img3, dx, dy)
+    img3 = shift(img, dx, dy)
     np.testing.assert_allclose(img2, img3, atol=1e-15, rtol=1.0)
 
 
