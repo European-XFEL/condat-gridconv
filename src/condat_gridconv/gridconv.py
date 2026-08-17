@@ -116,7 +116,7 @@ def hex_shift(tile, dx, dy, fill_value=None):
     # Apply shifts
     padded_tile = cart_shift(padded_tile, dx, dy)
 
-    # Unskew the image to a hexagonal shape
+    # Unskew the image
     for y in range(height):
         roll_amount = int(np.floor((y - cy) / 2))
         padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
