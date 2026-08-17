@@ -62,6 +62,8 @@ def cart_shift(arr, dx, dy):
 
     Shift each column (axis=0) or row (axis=1) in the array by an offset,
     which may be fractional.
+
+    Elements that roll beyond the last position are re-introduced at the first.
     """
     cx = arr.shape[1]
     cy = arr.shape[0]
