@@ -80,7 +80,7 @@ def cart_shift(arr, dx, dy):
     narr = np.roll(narr, full_pixel_shift, axis=1)
     for k in range(cy):
         # Sub-pixel shifts
-        fractional_roll(arr[k, :], shift - full_pixel_shift)
+        fractional_roll(narr[k, :], shift - full_pixel_shift)
 
     return narr
 
