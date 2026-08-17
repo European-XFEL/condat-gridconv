@@ -88,11 +88,14 @@ def test_shift():
     xv, yv = np.meshgrid(x, y, indexing="xy")
 
     sigma = 12
-    img = np.exp(-(xv**2 + yv**2) / sigma**2)
+    cval = 1.0
+    img = cval + np.exp(-(xv**2 + yv**2) / sigma**2)
+
     dx, dy = -48.835, 8.8757
-    img2 = np.exp(-((xv - dx) ** 2 + (yv - dy) ** 2) / sigma**2)
+    img2 = cval + np.exp(-((xv - dx) ** 2 + (yv - dy) ** 2) / sigma**2)
     img3 = cart_shift(img, dx, dy)
-    np.testing.assert_allclose(img2, img3, atol=1e-15, rtol=1.0)
+
+    np.testing.assert_allclose(img2, img3, rtol=1e-6)
 
 
 def test_hex_shift():
