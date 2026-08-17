@@ -103,8 +103,11 @@ def pad(tile, fill_value=None):
         return np.pad(tile, (width0, width1), mode="reflect")
 
 
-def hex_shift(tile, dx, dy, fill_value=None):
-    """Shift an hexagonal image with fractional pixel shifts."""
+def hex_shift(tile, dr1, dr2, fill_value=None):
+    """Shift an hexagonal image with fractional pixel shifts.
+
+    Elements that roll beyond the last position are re-introduced at the first.
+    """
     padded_tile = pad(tile, fill_value)
     cy = int(padded_tile.shape[0] / 2)
     cx = int(padded_tile.shape[1] / 2)
@@ -116,7 +119,7 @@ def hex_shift(tile, dx, dy, fill_value=None):
         padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
 
     # Apply shifts
-    padded_tile = cart_shift(padded_tile, dx, dy)
+    padded_tile = cart_shift(padded_tile, dr1, dr2)
 
     # Unskew the image
     for y in range(height):
