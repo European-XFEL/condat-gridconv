@@ -57,7 +57,7 @@ def shear(arr, delay, axis):
             fractional_roll(arr[k, :], shift - full_pixel_shift)
 
 
-def shift(arr, dx, dy):
+def cart_shift(arr, dx, dy):
     """Apply a 2D shift operation
 
     Shift each column (axis=0) or row (axis=1) in the array by an offset,
@@ -114,7 +114,7 @@ def hex_shift(tile, dx, dy, fill_value=None):
         padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
 
     # Apply shifts
-    padded_tile = shift(padded_tile, dx, dy)
+    padded_tile = cart_shift(padded_tile, dx, dy)
 
     # Unskew the image to a hexagonal shape
     for y in range(height):

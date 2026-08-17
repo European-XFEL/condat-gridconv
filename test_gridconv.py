@@ -8,8 +8,9 @@ from condat_gridconv.gridconv import (
     rotate,
     pixel_coord_hex2cart,
     pixel_coord_cart2hex,
-    shift,
+    cart_shift,
     hex_shift,
+    r_cart,
 )
 
 
@@ -90,7 +91,7 @@ def test_shift():
     img = np.exp(-(xv**2 + yv**2) / sigma**2)
     dx, dy = -48.835, 8.8757
     img2 = np.exp(-((xv - dx) ** 2 + (yv - dy) ** 2) / sigma**2)
-    img3 = shift(img, dx, dy)
+    img3 = cart_shift(img, dx, dy)
     np.testing.assert_allclose(img2, img3, atol=1e-15, rtol=1.0)
 
 
@@ -102,12 +103,15 @@ def test_hex_shift():
     xv, yv = np.meshgrid(x, y, indexing="xy")
 
     sigma = 15
-    img = np.exp(-(xv**2 + yv**2) / sigma**2)
-    hex_img = cart2hex(img, fill_value=0.0)
+    cval = 1.0
+    img = cval + np.exp(-(xv**2 + yv**2) / sigma**2)
+    hex_img = cart2hex(img, fill_value=cval)
 
-    dx, dy = 78.835, -12.8757
-    img2 = np.exp(-((xv - dx) ** 2 + (yv - dy) ** 2) / sigma**2)
-    hex_img2 = cart2hex(img2, fill_value=0.0)
+    dx, dy = 48.835, -12.8757
+    img2 = cval + np.exp(-((xv - dx) ** 2 + (yv - dy) ** 2) / sigma**2)
+    hex_img2 = cart2hex(img2, fill_value=cval)
 
-    hex_img3 = hex_shift(hex_img, dx, dy)
-    np.testing.assert_allclose(hex_img2, hex_img3, atol=1e-15, rtol=10)
+    dr1, dr2 = np.dot(r_cart, [dx, dy])
+    hex_img3 = hex_shift(hex_img, dr1, dr2, fill_value=cval)
+
+    np.testing.assert_allclose(hex_img2, hex_img3, rtol=1e-5)
