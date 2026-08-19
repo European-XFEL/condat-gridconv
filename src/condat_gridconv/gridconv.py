@@ -3,9 +3,24 @@ import numpy as np
 from .shift import fractional_roll, inplace_roll
 
 sqrt3 = np.sqrt(3)
-r_hex = np.sqrt(2 / sqrt3) * np.array([[1, 1 / 2],
-                                       [0, sqrt3 /2 ]])
+r_hex = np.sqrt(2 / sqrt3) * np.array([[1, 1 / 2], [0, sqrt3 / 2]])
 r_cart = np.linalg.inv(r_hex)
+
+
+def pixel_coord_hex2cart(x_hex, y_hex):
+    """Converts hexagonal pixels position to cartesian."""
+    x_cart = np.dot(r_cart, np.vstack((np.zeros_like(x_hex), x_hex)))[1]
+    y_cart = np.dot(r_cart, np.vstack((y_hex, np.zeros_like(y_hex))))[0]
+
+    return x_cart, y_cart
+
+
+def pixel_coord_cart2hex(x_cart, y_cart):
+    """Converts cartesian pixel position to hexagonal."""
+    x_hex = np.dot(r_hex, np.vstack((np.zeros_like(x_cart), x_cart)))[1]
+    y_hex = np.dot(r_hex, np.vstack((y_cart, np.zeros_like(y_cart))))[0]
+
+    return x_hex, y_hex
 
 
 def shear(arr, delay, axis):
@@ -42,6 +57,36 @@ def shear(arr, delay, axis):
             fractional_roll(arr[k, :], shift - full_pixel_shift)
 
 
+def cart_shift(arr, dx, dy):
+    """Apply a 2D shift operation
+
+    Shift each column (axis=0) or row (axis=1) in the array by an offset,
+    which may be fractional.
+
+    Elements that roll beyond the last position are re-introduced at the first.
+    """
+    cx = arr.shape[1]
+    cy = arr.shape[0]
+
+    # Vertical shift
+    shift = dy
+    full_pixel_shift = round(shift)
+    narr = np.roll(arr, full_pixel_shift, axis=0)
+    for k in range(cx):
+        # Sub-pixel shifts
+        fractional_roll(narr[:, k], shift - full_pixel_shift)
+
+    # Horizontal shift
+    shift = dx
+    full_pixel_shift = round(shift)
+    narr = np.roll(narr, full_pixel_shift, axis=1)
+    for k in range(cy):
+        # Sub-pixel shifts
+        fractional_roll(narr[k, :], shift - full_pixel_shift)
+
+    return narr
+
+
 def pad(tile, fill_value=None):
     w0 = tile.shape[0] // 2
     w1 = tile.shape[1] // 2
@@ -51,10 +96,48 @@ def pad(tile, fill_value=None):
     width1 = (w1, w1) if tile.shape[1] % 2 == 0 else (w1, w1 - 1)
 
     if fill_value is not None:
-        return np.pad(tile, (width0, width1),
-                      mode="constant", constant_values=fill_value)
+        return np.pad(
+            tile, (width0, width1), mode="constant", constant_values=fill_value
+        )
     else:
         return np.pad(tile, (width0, width1), mode="reflect")
+
+
+def hex_shift(tile, dr1, dr2, fill_value=None):
+    """Shift an hexagonal image with fractional pixel shifts.
+
+    Elements that roll beyond the last position are re-introduced at the first.
+    """
+    padded_tile = pad(tile, fill_value)
+    cy = int(padded_tile.shape[0] / 2)
+    cx = int(padded_tile.shape[1] / 2)
+
+    # First we skew the image to a hexagonal shape
+    height = padded_tile.shape[0]
+    for y in range(height):
+        roll_amount = -int(np.floor((y - cy) / 2))
+        padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
+
+    # Apply shifts
+    padded_tile = cart_shift(padded_tile, dr1, dr2)
+
+    # Unskew the image
+    for y in range(height):
+        roll_amount = int(np.floor((y - cy) / 2))
+        padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
+
+    # Extract the rectangular box
+    height = tile.shape[0]
+    width = tile.shape[1]
+
+    # // rounds towards zero, so -half_width differs from -width // 2.
+    half_width = width // 2
+    half_height = height // 2
+
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
 
 
 def hex2cart(tile, fill_value=None):
@@ -80,15 +163,19 @@ def hex2cart(tile, fill_value=None):
     shear(padded_tile, delay1, axis=0)
 
     # Extract the rectangular box
-    height = round(np.dot(r_cart, [tile.shape[0], 0])[0])
-    width = round(np.dot(r_cart, [0, tile.shape[1]])[1])
+    width, height = pixel_coord_hex2cart(tile.shape[1], tile.shape[0])
+    height = round(height[0])
+    width = round(width[0])
 
     # // rounds towards zero, so -half_width differs from -width // 2.
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[cy-half_height : cy+half_height+(height % 2),
-                       cx-half_width : cx+half_width+(width % 2)]
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
+
 
 def cart2hex(tile, fill_value=None):
     padded_tile = pad(tile, fill_value)
@@ -113,15 +200,19 @@ def cart2hex(tile, fill_value=None):
         padded_tile[y, :] = np.roll(padded_tile[y, :], roll_amount)
 
     # Extract the rectangular box
-    height = round(np.dot(r_hex, [tile.shape[0], 0])[0])
-    width = round(np.dot(r_hex, [0, tile.shape[1]])[1])
+    width, height = pixel_coord_cart2hex(tile.shape[1], tile.shape[0])
+    height = round(height[0])
+    width = round(width[0])
 
     # // rounds towards zero, so -half_width differs from -width // 2.
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[cy-half_height : cy+half_height+(height % 2),
-                       cx-half_width : cx+half_width+(width % 2)]
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
+
 
 def rotate(tile, angle, fill_value=None):
     """Rotate an image reversibly using 3 shears.
@@ -137,11 +228,11 @@ def rotate(tile, angle, fill_value=None):
 
     # Create shear coefficients
     theta = np.deg2rad(angle)
-    delay1 = -np.tan(theta/2.0)
+    delay1 = -np.tan(theta / 2.0)
     axis1 = 1
     delay2 = np.sin(theta)
     axis2 = 0
-    delay3 = -np.tan(theta/2.0)
+    delay3 = -np.tan(theta / 2.0)
     axis3 = 1
 
     # Apply shears in reverse order and opposite direction
@@ -157,5 +248,7 @@ def rotate(tile, angle, fill_value=None):
     half_width = width // 2
     half_height = height // 2
 
-    return padded_tile[cy-half_height : cy+half_height+(height % 2),
-                       cx-half_width : cx+half_width+(width % 2)]
+    return padded_tile[
+        cy - half_height : cy + half_height + (height % 2),
+        cx - half_width : cx + half_width + (width % 2),
+    ]
